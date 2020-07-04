@@ -39,6 +39,7 @@ import {
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import gsap, { TimelineMax, TweenMax } from "gsap/all";
+import { randomFloat } from "./utils/randomNum";
 
 import particlesSvg from "../svg/faq-bg.svg";
 import circle from "../svg/circle.png";
@@ -52,6 +53,8 @@ var camera;
 var clock;
 
 export const initScene = () => {
+	const container = document.getElementById('wrapper');
+
 	const scene = new Scene();
 	camera = new PerspectiveCamera(
 		75,
@@ -62,13 +65,13 @@ export const initScene = () => {
 
 	camera.position.set(0, 0, 100);
 	camera.lookAt(0, 0, 0);
-	const renderer = new WebGLRenderer();
+	const renderer = new WebGLRenderer({alpha: true});
 	const loader = new SVGLoader();
 
-	renderer.setClearColor(0x000000, 1);
+	renderer.setClearColor(0x000000, 0);
 
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	document.body.appendChild(renderer.domElement);
+	container.appendChild(renderer.domElement);
 
 	renderer.render(scene, camera);
 
@@ -197,8 +200,6 @@ export const initScene = () => {
 
 			vertex.toArray(positions, counter * 3);
 
-			console.log(vertex.toArray(positions, counter * 3));
-
 			vertices[counter] = vertex;
 
 			if (i < numNodes / 4 || i > numNodes / 1.35) {
@@ -248,39 +249,65 @@ export const initScene = () => {
 			for (let intersect in intersects) {
 				const object = intersects[intersect].object;
 				const index = intersects[intersect].index;
-				console.log(intersects[intersect]);
+
 				if (!INTERSECTED.find((obj) => obj.index === index)) {
-					INTERSECTED.push({
+					const initialX = attributes.position.array[index * 3];
+					const initialY = attributes.position.array[index * 3 + 1];
+					const config = {
 						index,
-						initial: attributes.position.array[index * 3],
+						initialX,
+						initialY,
 						animating: delta,
-					});
-					attributes.position.array[index * 3 + 1] += delta * 25;
+						toX: initialX + randomFloat(-1, 1),
+						toY: initialY + randomFloat(-1, 1),
+					};
+
+					INTERSECTED.push(config);
+					attributes.position.array[index * 3] += config.toX * delta;
+					attributes.position.array[index * 3 + 1] +=
+						config.toY * delta;
 				}
 			}
 		}
 
 		for (let intersect in INTERSECTED) {
 			const item = INTERSECTED[intersect];
-			const current = attributes.position.array[item.index * 3];
+			const currentX = attributes.position.array[item.index * 3];
+			const currentY = attributes.position.array[item.index * 3 + 1];
 			const animating = item.animating;
 
-			if (intersect == 0) {
-				// console.log(current, item.initial, delta);
-			}
+			// if (intersect == 0) {
+			// 	console.log(currentX, currentY, item.initialX, item.initialY);
+			// }
 
-			if (item.animating < 2) {
+			if (item.animating < 1) {
 				item.animating += delta;
-				attributes.position.array[item.index * 3 + 1] += delta * 25;
+				attributes.position.array[item.index * 3] += item.toX * delta;
+				attributes.position.array[item.index * 3 + 1] +=
+					item.toY * delta;
 			} else {
-				if (item.initial !== current) {
-					attributes.position.array[item.index * 3] +=
-						item.initial - current;
+				if (item.initialX !== currentX || item.initialY !== currentY) {
+					if (Math.abs(item.initialX - currentX) > 0.05) {
+						attributes.position.array[item.index * 3] +=
+							(item.initialX - currentX) * delta * 10;
+					} else {
+						attributes.position.array[item.index * 3] =
+							item.initialX;
+					}
+
+					if (Math.abs(item.initialY - currentY) > 0.05) {
+						attributes.position.array[item.index * 3 + 1] +=
+							(item.initialY - currentY) * delta * 10;
+					} else {
+						attributes.position.array[item.index * 3 + 1] =
+							item.initialY;
+					}
 				} else {
 					INTERSECTED.splice(intersect, 1);
 				}
 			}
 		}
+
 
 		attributes.position.needsUpdate = true;
 

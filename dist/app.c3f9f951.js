@@ -189,7 +189,7 @@ var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../node_modules/three/build/three.module.js":[function(require,module,exports) {
+},{"./..\\img\\back.jpg":[["back.9cd3ab62.jpg","img/back.jpg"],"img/back.jpg"],"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../node_modules/three/build/three.module.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -52514,7 +52514,23 @@ TweenMaxWithCSS = gsapWithCSS.core.Tween; //BONUS EXPORTS
 
 exports.TweenMax = TweenMaxWithCSS;
 exports.default = exports.gsap = gsapWithCSS;
-},{"./gsap-core.js":"../node_modules/gsap/gsap-core.js","./CSSPlugin.js":"../node_modules/gsap/CSSPlugin.js","./Draggable.js":"../node_modules/gsap/Draggable.js","./CSSRulePlugin.js":"../node_modules/gsap/CSSRulePlugin.js","./EaselPlugin.js":"../node_modules/gsap/EaselPlugin.js","./EasePack.js":"../node_modules/gsap/EasePack.js","./MotionPathPlugin.js":"../node_modules/gsap/MotionPathPlugin.js","./PixiPlugin.js":"../node_modules/gsap/PixiPlugin.js","./ScrollToPlugin.js":"../node_modules/gsap/ScrollToPlugin.js","./ScrollTrigger.js":"../node_modules/gsap/ScrollTrigger.js","./TextPlugin.js":"../node_modules/gsap/TextPlugin.js"}],"svg/faq-bg.svg":[function(require,module,exports) {
+},{"./gsap-core.js":"../node_modules/gsap/gsap-core.js","./CSSPlugin.js":"../node_modules/gsap/CSSPlugin.js","./Draggable.js":"../node_modules/gsap/Draggable.js","./CSSRulePlugin.js":"../node_modules/gsap/CSSRulePlugin.js","./EaselPlugin.js":"../node_modules/gsap/EaselPlugin.js","./EasePack.js":"../node_modules/gsap/EasePack.js","./MotionPathPlugin.js":"../node_modules/gsap/MotionPathPlugin.js","./PixiPlugin.js":"../node_modules/gsap/PixiPlugin.js","./ScrollToPlugin.js":"../node_modules/gsap/ScrollToPlugin.js","./ScrollTrigger.js":"../node_modules/gsap/ScrollTrigger.js","./TextPlugin.js":"../node_modules/gsap/TextPlugin.js"}],"js/utils/randomNum.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.randomInt = randomInt;
+exports.randomFloat = randomFloat;
+
+function randomInt(min, max) {
+  return min + Math.floor((max - min) * Math.random());
+}
+
+function randomFloat(min, max) {
+  return min + (max - min) * Math.random();
+}
+},{}],"svg/faq-bg.svg":[function(require,module,exports) {
 module.exports = "/faq-bg.83c59925.svg";
 },{}],"svg/circle.png":[function(require,module,exports) {
 module.exports = "/circle.3c98ba4d.png";
@@ -52534,6 +52550,8 @@ var _OrbitControls = require("three/examples/jsm/controls/OrbitControls.js");
 
 var _all = _interopRequireWildcard(require("gsap/all"));
 
+var _randomNum = require("./utils/randomNum");
+
 var _faqBg = _interopRequireDefault(require("../svg/faq-bg.svg"));
 
 var _circle = _interopRequireDefault(require("../svg/circle.png"));
@@ -52552,15 +52570,18 @@ var camera;
 var clock;
 
 var initScene = function initScene() {
+  var container = document.getElementById('wrapper');
   var scene = new _three.Scene();
   camera = new _three.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 0, 100);
   camera.lookAt(0, 0, 0);
-  var renderer = new _three.WebGLRenderer();
+  var renderer = new _three.WebGLRenderer({
+    alpha: true
+  });
   var loader = new _SVGLoader.SVGLoader();
-  renderer.setClearColor(0x000000, 1);
+  renderer.setClearColor(0x000000, 0);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
+  container.appendChild(renderer.domElement);
   renderer.render(scene, camera);
   var controls = new _OrbitControls.OrbitControls(camera, renderer.domElement);
   var sprite = new _three.TextureLoader().load(_circle.default); // Intersections
@@ -52671,7 +52692,6 @@ var initScene = function initScene() {
       var particle = new _three.Vector3(x, y, 0);
       vertex = particle;
       vertex.toArray(positions, counter * 3);
-      console.log(vertex.toArray(positions, counter * 3));
       vertices[counter] = vertex;
 
       if (i < numNodes / 4 || i > numNodes / 1.35) {
@@ -52713,17 +52733,23 @@ var initScene = function initScene() {
       var _loop = function _loop(intersect) {
         var object = intersects[intersect].object;
         var index = intersects[intersect].index;
-        console.log(intersects[intersect]);
 
         if (!INTERSECTED.find(function (obj) {
           return obj.index === index;
         })) {
-          INTERSECTED.push({
+          var initialX = attributes.position.array[index * 3];
+          var initialY = attributes.position.array[index * 3 + 1];
+          var config = {
             index: index,
-            initial: attributes.position.array[index * 3],
-            animating: delta
-          });
-          attributes.position.array[index * 3 + 1] += delta * 25;
+            initialX: initialX,
+            initialY: initialY,
+            animating: delta,
+            toX: initialX + (0, _randomNum.randomFloat)(-1, 1),
+            toY: initialY + (0, _randomNum.randomFloat)(-1, 1)
+          };
+          INTERSECTED.push(config);
+          attributes.position.array[index * 3] += config.toX * delta;
+          attributes.position.array[index * 3 + 1] += config.toY * delta;
         }
       };
 
@@ -52734,18 +52760,29 @@ var initScene = function initScene() {
 
     for (var _intersect in INTERSECTED) {
       var item = INTERSECTED[_intersect];
-      var current = attributes.position.array[item.index * 3];
-      var animating = item.animating;
+      var currentX = attributes.position.array[item.index * 3];
+      var currentY = attributes.position.array[item.index * 3 + 1];
+      var animating = item.animating; // if (intersect == 0) {
+      // 	console.log(currentX, currentY, item.initialX, item.initialY);
+      // }
 
-      if (_intersect == 0) {// console.log(current, item.initial, delta);
-      }
-
-      if (item.animating < 2) {
+      if (item.animating < 1) {
         item.animating += delta;
-        attributes.position.array[item.index * 3 + 1] += delta * 25;
+        attributes.position.array[item.index * 3] += item.toX * delta;
+        attributes.position.array[item.index * 3 + 1] += item.toY * delta;
       } else {
-        if (item.initial !== current) {
-          attributes.position.array[item.index * 3] += item.initial - current;
+        if (item.initialX !== currentX || item.initialY !== currentY) {
+          if (Math.abs(item.initialX - currentX) > 0.05) {
+            attributes.position.array[item.index * 3] += (item.initialX - currentX) * delta * 10;
+          } else {
+            attributes.position.array[item.index * 3] = item.initialX;
+          }
+
+          if (Math.abs(item.initialY - currentY) > 0.05) {
+            attributes.position.array[item.index * 3 + 1] += (item.initialY - currentY) * delta * 10;
+          } else {
+            attributes.position.array[item.index * 3 + 1] = item.initialY;
+          }
         } else {
           INTERSECTED.splice(_intersect, 1);
         }
@@ -52800,7 +52837,7 @@ document.addEventListener("mousemove", function (e) {
   mouse.x = event.clientX / window.innerWidth * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 });
-},{"three":"../node_modules/three/build/three.module.js","three/examples/jsm/loaders/SVGLoader.js":"../node_modules/three/examples/jsm/loaders/SVGLoader.js","three/examples/jsm/controls/OrbitControls.js":"../node_modules/three/examples/jsm/controls/OrbitControls.js","gsap/all":"../node_modules/gsap/all.js","../svg/faq-bg.svg":"svg/faq-bg.svg","../svg/circle.png":"svg/circle.png"}],"js/app.js":[function(require,module,exports) {
+},{"three":"../node_modules/three/build/three.module.js","three/examples/jsm/loaders/SVGLoader.js":"../node_modules/three/examples/jsm/loaders/SVGLoader.js","three/examples/jsm/controls/OrbitControls.js":"../node_modules/three/examples/jsm/controls/OrbitControls.js","gsap/all":"../node_modules/gsap/all.js","./utils/randomNum":"js/utils/randomNum.js","../svg/faq-bg.svg":"svg/faq-bg.svg","../svg/circle.png":"svg/circle.png"}],"js/app.js":[function(require,module,exports) {
 "use strict";
 
 require("../styles/main.scss");
@@ -52838,7 +52875,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50948" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63066" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

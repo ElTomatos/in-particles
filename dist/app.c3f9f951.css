@@ -47,4 +47,12 @@ canvas {
   display: block;
 }
 
+#wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url("/back.9cd3ab62.jpg") bottom center repeat;
+}
+
 /*# sourceMappingURL=/app.c3f9f951.css.map */
