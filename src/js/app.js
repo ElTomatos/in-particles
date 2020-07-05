@@ -4,4 +4,4 @@ import { initScene } from './scene';
 
 window.addEventListener('load', () => {
 	initScene();
-})
+});

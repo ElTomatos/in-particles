@@ -15,9 +15,6 @@
     "sass": "^1.26.9"
   },
   "dependencies": {
-    "glsl-noise": "0.0.0",
-    "glslify": "^7.0.0",
-    "gsap": "^3.3.4",
     "three": "^0.118.3"
   }
 }

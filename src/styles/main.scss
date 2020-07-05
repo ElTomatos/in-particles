@@ -1,4 +1,6 @@
 @import 'reset';
+@import 'fonts';
+@import 'loader';
 
 #wrapper {
 	min-height: 100vh;
@@ -6,4 +8,49 @@
 	align-items: center;
 	justify-content: center;
 	background: url('../img/back.jpg') bottom center repeat;
+	position: relative;
+
+	canvas {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		top: 0;
+		z-index: 1;
+	}
+}
+
+.title {
+	font-family: 'Museo Sans Cyrl 900';
+	text-transform: uppercase;
+	position: relative;
+	z-index: 10;
+	color: #fff;
+    font-size: 60px;
+	letter-spacing: 6px;
+	
+	span {
+		color: #00ffe4;
+	}
+}
+
+#loader {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	top: 0;
+	background: #000;
+	transition: opacity .5s ease;
+	opacity: 0;
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.loading {
+	#loader {
+		opacity: 1;
+	}
 }

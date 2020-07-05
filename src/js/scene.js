@@ -1,62 +1,141 @@
+/**
+ * Vendors
+ */
 import {
 	Scene,
 	PerspectiveCamera,
 	WebGLRenderer,
-	LineBasicMaterial,
 	Vector3,
 	Vector2,
 	BufferGeometry,
-	Line,
-	Group,
-	MeshBasicMaterial,
-	ShapeBufferGeometry,
-	DoubleSide,
 	Mesh,
-	ParticleSystem,
 	Geometry,
-	RawShaderMaterial,
-	ParticleBasicMaterial,
-	Vertex,
 	Points,
-	PointsMaterial,
 	TextureLoader,
-	PointLight,
-	SpriteCanvasMaterial,
 	ShaderMaterial,
 	Color,
-	AdditiveBlending,
-	BaseBlending,
-	SpriteMaterial,
-	NoBlending,
-	SubtractiveBlending,
-	MultiplyBlending,
-	NormalBlending,
 	BufferAttribute,
-	BoxGeometry,
 	Raycaster,
 	Clock,
+	TextGeometry,
+	Font,
+	MeshPhongMaterial,
+	DirectionalLight,
 } from "three";
-import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import gsap, { TimelineMax, TweenMax } from "gsap/all";
-import { randomFloat } from "./utils/randomNum";
 
-import particlesSvg from "../svg/faq-bg.svg";
+
+/**
+ * Utils
+ */
+import { randomFloat } from "./utils/randomNum";
+import { removeLoader } from "./removeLoader";
+
+/**
+ * Particles texture
+ */
 import circle from "../svg/circle.png";
 
-var PARTICLE_SIZE = 2;
+/**
+ * Question mark texture
+ */
+import facetype from "../fonts/alegreya.json";
 
-var raycaster, intersects;
-var mouse,
-	INTERSECTED = [];
-var camera;
-var clock;
+/**
+ * Constants
+ */
+const CIRCLES_COUNT = 20;
+const SMALL_CIRCLES = 6;
+const SMALL_CIRCLES_PARTICLES = 40;
+const BIG_CIRCLES_PARTICLES = 100;
+const PARTICLES_COUNT = SMALL_CIRCLES * SMALL_CIRCLES_PARTICLES + (CIRCLES_COUNT - SMALL_CIRCLES) * BIG_CIRCLES_PARTICLES;
+const PARTICLE_SIZE = 2;
 
-export const initScene = () => {
-	const container = document.getElementById('wrapper');
+/**
+ * Global definitions
+ */
+let raycaster;
+let intersects;
+let mouse;
+let INTERSECTED = [];
+let camera;
+let clock;
 
-	const scene = new Scene();
-	camera = new PerspectiveCamera(
+let ww = window.innerWidth;
+let wh = window.innerHeight;
+
+/**
+ * Add question mark mesh
+ */
+const addQuestionMark = () => {
+	const font = new Font(facetype);
+	const geometry = new TextGeometry('?', {
+		font: font,
+		size: 80,
+		height: 4,
+		curveSegments: 0,
+		bevelEnabled: true,
+		bevelThickness: 2,
+		bevelSize: 2,
+		bevelOffset: 0,
+		bevelSegments: 100
+	});
+
+	const textMaterial = new MeshPhongMaterial({ color: 0x856dff, opacity: 0.2 });
+
+	const mesh = new Mesh(geometry, textMaterial);
+	mesh.position.set(-20, -30, -25);
+
+	return mesh;
+};
+
+/**
+ * Add light to scene
+ */
+const addLight = () => {
+	const light = new DirectionalLight(0x652eff, 1);
+	light.position.set(0, 25, 30);
+	light.target.position.set(0, -10, 0);
+	return light;
+};
+
+
+/**
+ * Mouse move handler
+ * for particles intersections
+ * and question mark rotation
+ */
+const addMouseMoveHandler = (mouse, questionMark) => {
+	document.addEventListener("mousemove", function (e) {
+		e.preventDefault();
+
+		mouse.x = (e.clientX / ww) * 2 - 1;
+		mouse.y = -(e.clientY / wh) * 2 + 1;
+
+		questionMark.rotation.y = mouse.x * .2;
+		questionMark.rotation.x = -mouse.y * .2;
+	});
+};
+
+/**
+ * Resize handler
+ */
+const addResizeHandler = (camera, renderer) => {
+	window.addEventListener('resize', function() {
+		ww = window.innerWidth;
+		wh = window.innerHeight;
+
+		camera.aspect = ww / wh;
+		camera.updateProjectionMatrix();
+	
+		renderer.setSize( ww, wh );
+	});
+};
+
+/**
+ * Init camera
+ */
+const initCamera = () => {
+	const camera = new PerspectiveCamera(
 		75,
 		window.innerWidth / window.innerHeight,
 		0.1,
@@ -65,57 +144,64 @@ export const initScene = () => {
 
 	camera.position.set(0, 0, 100);
 	camera.lookAt(0, 0, 0);
-	const renderer = new WebGLRenderer({alpha: true});
-	const loader = new SVGLoader();
 
+	return camera;
+};
+
+/**
+ * Init whole scene
+ */
+export const initScene = () => {
+	/** Scene */
+	const scene = new Scene();
+
+	/** Camera */
+	camera = initCamera();
+
+	/** Renderer */
+	const renderer = new WebGLRenderer({ alpha: true });
 	renderer.setClearColor(0x000000, 0);
-
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	container.appendChild(renderer.domElement);
-
 	renderer.render(scene, camera);
 
-	const controls = new OrbitControls(camera, renderer.domElement);
+	/** Set renderer pixel ratio */
+	const pixelRatio = window.devicePixelRatio || 1;
+	renderer.setPixelRatio(pixelRatio);
 
-	const sprite = new TextureLoader().load(circle);
+	/** Append scene to DOM */
+	const container = document.getElementById('wrapper');
+	container.appendChild(renderer.domElement);
 
-	// Intersections
+	/** Intersections Raycaster */
 	raycaster = new Raycaster();
 	raycaster.params.Points.threshold = 10;
-	// raycaster.params.Line.threshold = 10;
+
+	/** Clock */
 	clock = new Clock(true);
 
-	mouse = new Vector2();
+	/** Mouse */
+	mouse = new Vector2(5000,5000,0);
 
-	// create the particle variables
-	var point_count = 300;
-	var lin_cfnt = 1;
-	var log_cfnt = 0.02;
-	var x_position, y_position, z_position;
+	/** Particles variables */
+	const particles = new Geometry();
+	particles.vertices = new Array(PARTICLES_COUNT);
+	const vertices = particles.vertices;
 
-	var spriteMap = new TextureLoader().load(circle);
+	const positions = new Float32Array(vertices.length * 3);
+	const colors = new Float32Array(vertices.length * 3);
+	const sizes = new Float32Array(vertices.length);
 
-	var particles = new Geometry();
-	particles.vertices = new Array(6000);
-	var vertices = particles.vertices;
-	// var vertices = new BoxGeometry( 200, 200, 200, 32, 32, 32 ).vertices;
+	const color = new Color();
 
-	var positions = new Float32Array(vertices.length * 3);
-	var colors = new Float32Array(vertices.length * 3);
-	var sizes = new Float32Array(vertices.length);
+	const geometry = new BufferGeometry();
 
-	var vertex;
-	var color = new Color();
-
-	var geometry = new BufferGeometry();
-
+	/** Geometry attributes */
 	geometry.setAttribute("position", new BufferAttribute(positions, 3));
 	geometry.setAttribute("customColor", new BufferAttribute(colors, 3));
 	geometry.setAttribute("size", new BufferAttribute(sizes, 1));
 
-	var particles = new Geometry();
-
-	var material = new ShaderMaterial({
+	/** Particles shader */
+	const material = new ShaderMaterial({
 		uniforms: {
 			color: { value: new Color(0xffffff) },
 			pointTexture: { value: new TextureLoader().load(circle) },
@@ -126,95 +212,48 @@ export const initScene = () => {
 		alphaTest: 0.5,
 	});
 
-	// var material = new PointsMaterial({
-	// 	size: 5,
-	// 	map: spriteMap,
-	// 	depthTest: false,
-	// 	transparent: true,
-	// 	sizeAttenuation: false,
-	// 	alphaTest: 0.5,
-	// 	blending: NormalBlending,
-	// 	color: "#00ff00",
-	// });
-
-	//    const light = new PointLight( 0xff0000, 1, 100 );
-	// light.position.set( 0, 0, 0 );
-	// scene.add( light );
-
-	// for (var i = 0.1; i <= point_count; i = i + 0.1) {
-	// 	x_position = lin_cfnt * Math.pow(Math.E, log_cfnt * i) * Math.cos(+i);
-	// 	y_position = lin_cfnt * Math.pow(Math.E, log_cfnt * i) * Math.sin(+i);
-	// 	z_position = 0;
-	//     var particle = new Vector3(x_position, y_position, z_position)
-	//     console.log(x_position, y_position);
-	//   // add it to the geometry
-	//   particles.vertices.push(particle);
-	// }
-
-	// N!
-	//    var radius = 0;
-	//    var angle = 0;
-	// for (var n = 500; n > -500; n--) {
-	//        radius += n * 0.000385;
-	//        // make a complete circle every 50 iterations
-	//        angle += (Math.PI * 2) / 50;
-
-	//        var x =  radius * Math.cos(angle);
-	//        var y = radius * Math.sin(angle);
-	//        var particle = new Vector3(x, y, 0);
-	//        particles.vertices.push(particle);
-
-	//                console.log(radius);
-	//    }
-
-	// N2
-
+	/** Create circles */
 	const circles = [];
 	let radius = 0;
 
-	for (let i = 20; i > 0; i--) {
+	for (let i = CIRCLES_COUNT; i > 0; i--) {
 		radius += i / 3;
 		circles.push(radius);
 	}
 
+	/** Create particles for circles */
 	let counter = 0;
-	var vertex;
-	circles.forEach((radius) => {
-		var numNodes = 100;
-		var nodes = [],
-			width = radius * 2,
-			height = radius * 2,
-			angle,
-			x,
-			y,
-			i;
+	circles.forEach((radius, index) => {
+		const numNodes = index > SMALL_CIRCLES ? BIG_CIRCLES_PARTICLES : SMALL_CIRCLES_PARTICLES;
+		const width = radius * 2;
+		let angle;
+		let x;
+		let y;
+		let i;
 		for (i = 0; i < numNodes; i++) {
 			counter++;
 			angle = (i / (numNodes / 2)) * Math.PI; // Calculate the angle at which the element will be placed.
-			// For a semicircle, we would use (i / numNodes) * Math.PI.
 			x = radius * Math.cos(angle) + width / 2 - radius; // Calculate the x position of the element.
 			y = radius * Math.sin(angle) + width / 2 - radius; // Calculate the y position of the element.
 			const particle = new Vector3(x, y, 0);
 
-			vertex = particle;
+			particle.toArray(positions, counter * 3);
 
-			vertex.toArray(positions, counter * 3);
-
-			vertices[counter] = vertex;
-
+			/** Calculate particle color */
 			if (i < numNodes / 4 || i > numNodes / 1.35) {
 				color.setRGB((i + 100) / 100, 0, (i + 100) / 100);
 			} else if (i < numNodes / 3) {
 				color.setRGB((i + 50) / 100, 0, (i + 100) / 100);
 			} else if (i < numNodes / 2) {
 				color.setRGB((100 - i) / 100, 0, (i + 100) / 100);
-			} else if (i < numNodes) {
-				color.setRGB(i / 100, 0, (i + 100) / 100);
 			}
 
 			color.toArray(colors, counter * 3);
 
-			if (counter > 3000) {
+			/** Calculate particles size */
+			if (counter < 200) {
+				sizes[counter] = PARTICLE_SIZE * 0.8;
+			} else if (counter > 1000) {
 				sizes[counter] = PARTICLE_SIZE * 1.3;
 			} else {
 				sizes[counter] = PARTICLE_SIZE;
@@ -222,33 +261,28 @@ export const initScene = () => {
 		}
 	});
 
-	// console.log(particles);
-
-	// create the particle system
-	var particleSystem = new Points(geometry, material);
-
-	// add it to the scene
+	/** Create particle system */
+	const particleSystem = new Points(geometry, material);
 	scene.add(particleSystem);
 
-	function animate(ts) {
+	/** Animation loop */
+	function animate() {
 		requestAnimationFrame(animate);
 
-		var geometry = particleSystem.geometry;
-		var attributes = geometry.attributes;
+		const { geometry } = particleSystem;
+		const { attributes}  = geometry;
 
-		// required if controls.enableDamping or controls.autoRotate are set to true
-		controls.update();
-
+		/** Get mouse intersections */
 		raycaster.setFromCamera(mouse, camera);
-
 		intersects = raycaster.intersectObject(particleSystem);
 
+		/** Get delta from previous tick */
 		const delta = clock.getDelta();
 
-		if (intersects.length && intersects.length < 4100) {
+		/** Add intersections to animation */
+		if (intersects.length && intersects.length < PARTICLES_COUNT) {
 			for (let intersect in intersects) {
-				const object = intersects[intersect].object;
-				const index = intersects[intersect].index;
+				const { index } = intersects[intersect];
 
 				if (!INTERSECTED.find((obj) => obj.index === index)) {
 					const initialX = attributes.position.array[index * 3];
@@ -258,33 +292,29 @@ export const initScene = () => {
 						initialX,
 						initialY,
 						animating: delta,
-						toX: initialX + randomFloat(-1, 1),
-						toY: initialY + randomFloat(-1, 1),
+						toX: initialX + 2,
+						toY: initialY + 2,
 					};
 
 					INTERSECTED.push(config);
-					attributes.position.array[index * 3] += config.toX * delta;
+					attributes.position.array[index * 3] += config.toX * delta / 8;
 					attributes.position.array[index * 3 + 1] +=
 						config.toY * delta;
 				}
 			}
 		}
 
+		/** Animate intersections */
 		for (let intersect in INTERSECTED) {
 			const item = INTERSECTED[intersect];
 			const currentX = attributes.position.array[item.index * 3];
 			const currentY = attributes.position.array[item.index * 3 + 1];
-			const animating = item.animating;
-
-			// if (intersect == 0) {
-			// 	console.log(currentX, currentY, item.initialX, item.initialY);
-			// }
 
 			if (item.animating < 1) {
 				item.animating += delta;
-				attributes.position.array[item.index * 3] += item.toX * delta;
+				attributes.position.array[item.index * 3] += item.toX * delta / 8;
 				attributes.position.array[item.index * 3 + 1] +=
-					item.toY * delta;
+					item.toY * delta / 8;
 			} else {
 				if (item.initialX !== currentX || item.initialY !== currentY) {
 					if (Math.abs(item.initialX - currentX) > 0.05) {
@@ -308,58 +338,32 @@ export const initScene = () => {
 			}
 		}
 
-
 		attributes.position.needsUpdate = true;
-
-		// console.log(intersects);
-		// if (intersects.length > 0) {
-		// 	intersects.forEach((intersect, index) => {
-		// 				if (!INTERSECTED.includes(index)) {
-		// 				INTERSECTED.push(index);
-		// 				console.log(INTERSECTED, attributes.size.array[index]);
-		// 				attributes.size.array[index] = PARTICLE_SIZE * 1.25;
-		// 				attributes.size.needsUpdate = true;
-		// 			}
-
-		// 	});
-		// }
-
-		for (var i = 0; i < intersects.length; i++) {
-			/*
-	            An intersection has the following properties :
-	                - object : intersected object (THREE.Mesh)
-	                - distance : distance from camera to intersection (number)
-	                - face : intersected face (THREE.Face3)
-	                - faceIndex : intersected face index (number)
-	                - point : intersection point (THREE.Vector3)
-	                - uv : intersection point in the object's UV coordinates (THREE.Vector2)
-	        */
-		}
-
-		// if (intersects.length > 0) {
-		// 	if (INTERSECTED != intersects[0].index) {
-		// 		attributes.size.array[INTERSECTED] = PARTICLE_SIZE;
-
-		// 		INTERSECTED = intersects[0].index;
-
-		// 		attributes.size.array[INTERSECTED] = PARTICLE_SIZE * 1.25;
-		// 		attributes.size.needsUpdate = true;
-		// 	}
-		// } else if (INTERSECTED !== null) {
-		// 	attributes.size.array[INTERSECTED] = PARTICLE_SIZE;
-		// 	attributes.size.needsUpdate = true;
-		// 	INTERSECTED = null;
-		// }
 
 		renderer.render(scene, camera);
 	}
 
+	/** Add question mark */
+	const questionMark = addQuestionMark();
+	scene.add(questionMark);
+
+	/** Add light */
+	const light = addLight();
+	scene.add(light);
+	scene.add(light.target);
+
+	/** Add mouse move handler */
+	addMouseMoveHandler(mouse, questionMark);
+
+	/** Add resize handler */
+	addResizeHandler(camera, renderer);
+
+	/** Start animation loop */
 	animate();
+
+	setTimeout(() => {
+		removeLoader();
+	}, 1000);
 };
 
-document.addEventListener("mousemove", function (e) {
-	e.preventDefault();
 
-	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-});
