@@ -27,8 +27,8 @@ import debounce from 'lodash.debounce';
 /**
  * Utils
  */
-import { randomFloat } from "./utils/randomNum";
 import { removeLoader } from "./removeLoader";
+import { easeInOutCirc } from './utils/easings';
 
 /**
  * Particles texture

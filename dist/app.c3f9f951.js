@@ -36779,22 +36779,6 @@ function toNumber(value) {
 
 module.exports = debounce;
 
-},{}],"js/utils/randomNum.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.randomInt = randomInt;
-exports.randomFloat = randomFloat;
-
-function randomInt(min, max) {
-  return min + Math.floor((max - min) * Math.random());
-}
-
-function randomFloat(min, max) {
-  return min + (max - min) * Math.random();
-}
 },{}],"js/removeLoader.js":[function(require,module,exports) {
 "use strict";
 
@@ -36812,6 +36796,17 @@ var removeLoader = function removeLoader() {
 };
 
 exports.removeLoader = removeLoader;
+},{}],"js/utils/easings.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.easeInOutCirc = easeInOutCirc;
+
+function easeInOutCirc(x) {
+  return x < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2;
+}
 },{}],"svg/circle.png":[function(require,module,exports) {
 module.exports = "/circle.3c98ba4d.png";
 },{}],"fonts/alegreya.json":[function(require,module,exports) {
@@ -36874,9 +36869,9 @@ var _three = require("three");
 
 var _lodash = _interopRequireDefault(require("lodash.debounce"));
 
-var _randomNum = require("./utils/randomNum");
-
 var _removeLoader = require("./removeLoader");
+
+var _easings = require("./utils/easings");
 
 var _circle = _interopRequireDefault(require("../svg/circle.png"));
 
@@ -37277,7 +37272,7 @@ var initScene = function initScene() {
 };
 
 exports.initScene = initScene;
-},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./utils/randomNum":"js/utils/randomNum.js","./removeLoader":"js/removeLoader.js","../svg/circle.png":"svg/circle.png","../fonts/alegreya.json":"fonts/alegreya.json"}],"js/app.js":[function(require,module,exports) {
+},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./removeLoader":"js/removeLoader.js","./utils/easings":"js/utils/easings.js","../svg/circle.png":"svg/circle.png","../fonts/alegreya.json":"fonts/alegreya.json"}],"js/app.js":[function(require,module,exports) {
 "use strict";
 
 require("../styles/main.scss");
@@ -37315,7 +37310,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57305" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59059" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
