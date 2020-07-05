@@ -22,7 +22,7 @@ import {
 	MeshPhongMaterial,
 	DirectionalLight,
 } from "three";
-
+import debounce from 'lodash.debounce';
 
 /**
  * Utils
@@ -39,6 +39,7 @@ import circle from "../svg/circle.png";
  * Question mark texture
  */
 import facetype from "../fonts/alegreya.json";
+// import { debounce } from "./utils/debounce";
 
 /**
  * Constants
@@ -98,6 +99,17 @@ const addLight = () => {
 	return light;
 };
 
+/**
+ * Clear stucked particles
+ */
+const clearStuckedParticles = debounce(() => {
+	INTERSECTED.map(item => {
+		if (item.isStuck) {
+			item.isStuck = false;
+		}
+	});
+}, 50, {leading: true, maxWait: 200})
+
 
 /**
  * Mouse move handler
@@ -113,6 +125,8 @@ const addMouseMoveHandler = (mouse, questionMark) => {
 
 		questionMark.rotation.y = mouse.x * .2;
 		questionMark.rotation.x = -mouse.y * .2;
+
+		clearStuckedParticles();
 	});
 };
 
@@ -120,14 +134,14 @@ const addMouseMoveHandler = (mouse, questionMark) => {
  * Resize handler
  */
 const addResizeHandler = (camera, renderer) => {
-	window.addEventListener('resize', function() {
+	window.addEventListener('resize', function () {
 		ww = window.innerWidth;
 		wh = window.innerHeight;
 
 		camera.aspect = ww / wh;
 		camera.updateProjectionMatrix();
-	
-		renderer.setSize( ww, wh );
+
+		renderer.setSize(ww, wh);
 	});
 };
 
@@ -174,13 +188,14 @@ export const initScene = () => {
 
 	/** Intersections Raycaster */
 	raycaster = new Raycaster();
-	raycaster.params.Points.threshold = 10;
+	raycaster.params.Points.threshold = 20;
+	// raycaster.params.Line.threshold = 15;
 
 	/** Clock */
 	clock = new Clock(true);
 
 	/** Mouse */
-	mouse = new Vector2(5000,5000,0);
+	mouse = new Vector2(5000, 5000, 0);
 
 	/** Particles variables */
 	const particles = new Geometry();
@@ -270,7 +285,7 @@ export const initScene = () => {
 	function animate() {
 		requestAnimationFrame(animate);
 
-		const { geometry: {attributes} } = particleSystem;
+		const { geometry: { attributes } } = particleSystem;
 
 		/** Get mouse intersections */
 		raycaster.setFromCamera(mouse, camera);
@@ -282,46 +297,27 @@ export const initScene = () => {
 		/** Add intersections to animation */
 		if (intersects.length && intersects.length < PARTICLES_COUNT) {
 			for (let intersect in intersects) {
-				const { index } = intersects[intersect];
+				const { index, distanceToRay } = intersects[intersect];
 				const xPos = index * 3;
 				const yPos = xPos + 1;
 
 				if (!INTERSECTED.some((obj) => obj.index === index)) {
 					const initialX = attributes.position.array[xPos];
 					const initialY = attributes.position.array[yPos];
+					const animationRatio = (PARTICLES_COUNT - index / PARTICLES_COUNT - 1) / 500
 					const config = {
 						index,
 						initialX,
 						initialY,
 						animating: delta,
-						toX: initialX + 2,
-						toY: initialY + 2,
+						toX: initialX + Math.sign(initialX) * animationRatio,
+						toY: initialY + Math.sign(initialY) * animationRatio,
 					};
 
 					INTERSECTED.push(config);
 					attributes.position.array[xPos] += config.toX * delta / 2;
 					attributes.position.array[yPos] +=
 						config.toY * delta;
-				} else {
-					// if (item.initialX !== currentX || item.initialY !== currentY) {
-					// 	if (Math.abs(item.initialX - currentX) > 0.05) {
-					// 		attributes.position.array[xPos] +=
-					// 			(item.initialX - currentX) * delta * 10;
-					// 	} else {
-					// 		attributes.position.array[xPos] =
-					// 			item.initialX;
-					// 	}
-	
-					// 	if (Math.abs(item.initialY - currentY) > 0.05) {
-					// 		attributes.position.array[yPos] +=
-					// 			(item.initialY - currentY) * delta * 10;
-					// 	} else {
-					// 		attributes.position.array[yPos] =
-					// 			item.initialY;
-					// 	}
-					// } else {
-					// 	INTERSECTED.splice(intersect, 1);
-					// }
 				}
 			}
 		}
@@ -336,33 +332,62 @@ export const initScene = () => {
 			const currentX = attributes.position.array[xPos];
 			const currentY = attributes.position.array[yPos];
 
-			if (item.animating < .5 && intersects.some((obj) => obj.index === item.index)) {
+			if (intersects.some((obj) => obj.index === item.index)) {
+
 				item.animating += delta;
-				attributes.position.array[xPos] += item.toX * delta / 8;
-				attributes.position.array[yPos] +=
-					item.toY * delta / 8;
+				const step = delta * 10;
+
+				const xTranslate = Math.max(Math.abs(currentX) + step, Math.abs(currentX));
+				let newXPos;
+
+				if (item.isReversing) {
+					item.isStuck = true;
+					newXPos = currentX;
+				} else if (Math.abs(item.toX) - xTranslate < 0.05) {
+					newXPos = item.toX;
+				} else {
+					newXPos = xTranslate * Math.sign(currentX)
+				}
+
+				const yTranslate = Math.abs(currentY) + step
+				let newYPos;
+
+				if (Math.abs(item.toY) - yTranslate < 0.05) {
+					newYPos = item.toY;
+				} else {
+					newYPos = yTranslate * Math.sign(currentY)
+				}
+
+				attributes.position.array[xPos] = newXPos;
+				attributes.position.array[yPos] = newYPos;
+
 			} else {
 				if (item.initialX !== currentX || item.initialY !== currentY) {
-					if (Math.abs(item.initialX - currentX) > 0.05) {
-						attributes.position.array[xPos] +=
-							(item.initialX - currentX) * delta * 10;
-					} else {
-						attributes.position.array[xPos] =
-							item.initialX;
+					item.isReversing = true;
+					if (!item.isStuck) {
+						if (Math.abs(item.initialX - currentX) > 0.05) {
+							attributes.position.array[xPos] +=
+								(item.initialX - currentX) * delta * 10;
+						} else {
+							attributes.position.array[xPos] =
+								item.initialX;
+						}
+
+						if (Math.abs(item.initialY - currentY) > 0.05) {
+							attributes.position.array[yPos] +=
+								(item.initialY - currentY) * delta * 10;
+						} else {
+							attributes.position.array[yPos] =
+								item.initialY;
+						}
 					}
 
-					if (Math.abs(item.initialY - currentY) > 0.05) {
-						attributes.position.array[yPos] +=
-							(item.initialY - currentY) * delta * 10;
-					} else {
-						attributes.position.array[yPos] =
-							item.initialY;
-					}
 				} else {
 					INTERSECTED.splice(intersect, 1);
 				}
 			}
 		}
+
 
 		attributes.position.needsUpdate = true;
 
