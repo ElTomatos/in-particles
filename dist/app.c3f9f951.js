@@ -36708,20 +36708,22 @@ var initScene = function initScene() {
       counter++;
       angle = i / (numNodes / 2) * Math.PI; // Calculate the angle at which the element will be placed.
 
-      x = radius * Math.cos(angle) + width / 2 - radius; // Calculate the x position of the element.
+      x = radius * Math.cos(angle); // Calculate the x position of the element.
 
-      y = radius * Math.sin(angle) + width / 2 - radius; // Calculate the y position of the element.
+      y = radius * Math.sin(angle); // Calculate the y position of the element.
 
       var particle = new _three.Vector3(x, y, 0);
       particle.toArray(positions, counter * 3);
       /** Calculate particle color */
 
+      var B = (i + 100) / 100;
+
       if (i < numNodes / 4 || i > numNodes / 1.35) {
-        color.setRGB((i + 100) / 100, 0, (i + 100) / 100);
+        color.setRGB((i + 100) / 100, 0, B);
       } else if (i < numNodes / 3) {
-        color.setRGB((i + 50) / 100, 0, (i + 100) / 100);
+        color.setRGB((i + 50) / 100, 0, B);
       } else if (i < numNodes / 2) {
-        color.setRGB((100 - i) / 100, 0, (i + 100) / 100);
+        color.setRGB((100 - i) / 100, 0, B);
       }
 
       color.toArray(colors, counter * 3);
@@ -36744,8 +36746,7 @@ var initScene = function initScene() {
 
   function animate() {
     requestAnimationFrame(animate);
-    var geometry = particleSystem.geometry;
-    var attributes = geometry.attributes;
+    var attributes = particleSystem.geometry.attributes;
     /** Get mouse intersections */
 
     raycaster.setFromCamera(mouse, camera);
@@ -36758,12 +36759,14 @@ var initScene = function initScene() {
     if (intersects.length && intersects.length < PARTICLES_COUNT) {
       var _loop = function _loop(intersect) {
         var index = intersects[intersect].index;
+        var xPos = index * 3;
+        var yPos = xPos + 1;
 
-        if (!INTERSECTED.find(function (obj) {
+        if (!INTERSECTED.some(function (obj) {
           return obj.index === index;
         })) {
-          var initialX = attributes.position.array[index * 3];
-          var initialY = attributes.position.array[index * 3 + 1];
+          var initialX = attributes.position.array[xPos];
+          var initialY = attributes.position.array[yPos];
           var config = {
             index: index,
             initialX: initialX,
@@ -36773,8 +36776,26 @@ var initScene = function initScene() {
             toY: initialY + 2
           };
           INTERSECTED.push(config);
-          attributes.position.array[index * 3] += config.toX * delta / 8;
-          attributes.position.array[index * 3 + 1] += config.toY * delta;
+          attributes.position.array[xPos] += config.toX * delta / 2;
+          attributes.position.array[yPos] += config.toY * delta;
+        } else {// if (item.initialX !== currentX || item.initialY !== currentY) {
+          // 	if (Math.abs(item.initialX - currentX) > 0.05) {
+          // 		attributes.position.array[xPos] +=
+          // 			(item.initialX - currentX) * delta * 10;
+          // 	} else {
+          // 		attributes.position.array[xPos] =
+          // 			item.initialX;
+          // 	}
+          // 	if (Math.abs(item.initialY - currentY) > 0.05) {
+          // 		attributes.position.array[yPos] +=
+          // 			(item.initialY - currentY) * delta * 10;
+          // 	} else {
+          // 		attributes.position.array[yPos] =
+          // 			item.initialY;
+          // 	}
+          // } else {
+          // 	INTERSECTED.splice(intersect, 1);
+          // }
         }
       };
 
@@ -36785,32 +36806,40 @@ var initScene = function initScene() {
     /** Animate intersections */
 
 
-    for (var _intersect in INTERSECTED) {
+    var _loop2 = function _loop2(_intersect) {
       var item = INTERSECTED[_intersect];
-      var currentX = attributes.position.array[item.index * 3];
-      var currentY = attributes.position.array[item.index * 3 + 1];
+      var xPos = item.index * 3;
+      var yPos = xPos + 1;
+      var currentX = attributes.position.array[xPos];
+      var currentY = attributes.position.array[yPos];
 
-      if (item.animating < 1) {
+      if (item.animating < .5 && intersects.some(function (obj) {
+        return obj.index === item.index;
+      })) {
         item.animating += delta;
-        attributes.position.array[item.index * 3] += item.toX * delta / 8;
-        attributes.position.array[item.index * 3 + 1] += item.toY * delta / 8;
+        attributes.position.array[xPos] += item.toX * delta / 8;
+        attributes.position.array[yPos] += item.toY * delta / 8;
       } else {
         if (item.initialX !== currentX || item.initialY !== currentY) {
           if (Math.abs(item.initialX - currentX) > 0.05) {
-            attributes.position.array[item.index * 3] += (item.initialX - currentX) * delta * 10;
+            attributes.position.array[xPos] += (item.initialX - currentX) * delta * 10;
           } else {
-            attributes.position.array[item.index * 3] = item.initialX;
+            attributes.position.array[xPos] = item.initialX;
           }
 
           if (Math.abs(item.initialY - currentY) > 0.05) {
-            attributes.position.array[item.index * 3 + 1] += (item.initialY - currentY) * delta * 10;
+            attributes.position.array[yPos] += (item.initialY - currentY) * delta * 10;
           } else {
-            attributes.position.array[item.index * 3 + 1] = item.initialY;
+            attributes.position.array[yPos] = item.initialY;
           }
         } else {
           INTERSECTED.splice(_intersect, 1);
         }
       }
+    };
+
+    for (var _intersect in INTERSECTED) {
+      _loop2(_intersect);
     }
 
     attributes.position.needsUpdate = true;
@@ -36879,7 +36908,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52037" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55642" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

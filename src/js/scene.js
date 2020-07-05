@@ -233,19 +233,20 @@ export const initScene = () => {
 		for (i = 0; i < numNodes; i++) {
 			counter++;
 			angle = (i / (numNodes / 2)) * Math.PI; // Calculate the angle at which the element will be placed.
-			x = radius * Math.cos(angle) + width / 2 - radius; // Calculate the x position of the element.
-			y = radius * Math.sin(angle) + width / 2 - radius; // Calculate the y position of the element.
+			x = radius * Math.cos(angle); // Calculate the x position of the element.
+			y = radius * Math.sin(angle); // Calculate the y position of the element.
 			const particle = new Vector3(x, y, 0);
 
 			particle.toArray(positions, counter * 3);
 
 			/** Calculate particle color */
+			const B = (i + 100) / 100;
 			if (i < numNodes / 4 || i > numNodes / 1.35) {
-				color.setRGB((i + 100) / 100, 0, (i + 100) / 100);
+				color.setRGB((i + 100) / 100, 0, B);
 			} else if (i < numNodes / 3) {
-				color.setRGB((i + 50) / 100, 0, (i + 100) / 100);
+				color.setRGB((i + 50) / 100, 0, B);
 			} else if (i < numNodes / 2) {
-				color.setRGB((100 - i) / 100, 0, (i + 100) / 100);
+				color.setRGB((100 - i) / 100, 0, B);
 			}
 
 			color.toArray(colors, counter * 3);
@@ -269,8 +270,7 @@ export const initScene = () => {
 	function animate() {
 		requestAnimationFrame(animate);
 
-		const { geometry } = particleSystem;
-		const { attributes}  = geometry;
+		const { geometry: {attributes} } = particleSystem;
 
 		/** Get mouse intersections */
 		raycaster.setFromCamera(mouse, camera);
@@ -283,10 +283,12 @@ export const initScene = () => {
 		if (intersects.length && intersects.length < PARTICLES_COUNT) {
 			for (let intersect in intersects) {
 				const { index } = intersects[intersect];
+				const xPos = index * 3;
+				const yPos = xPos + 1;
 
-				if (!INTERSECTED.find((obj) => obj.index === index)) {
-					const initialX = attributes.position.array[index * 3];
-					const initialY = attributes.position.array[index * 3 + 1];
+				if (!INTERSECTED.some((obj) => obj.index === index)) {
+					const initialX = attributes.position.array[xPos];
+					const initialY = attributes.position.array[yPos];
 					const config = {
 						index,
 						initialX,
@@ -297,9 +299,29 @@ export const initScene = () => {
 					};
 
 					INTERSECTED.push(config);
-					attributes.position.array[index * 3] += config.toX * delta / 8;
-					attributes.position.array[index * 3 + 1] +=
+					attributes.position.array[xPos] += config.toX * delta / 2;
+					attributes.position.array[yPos] +=
 						config.toY * delta;
+				} else {
+					// if (item.initialX !== currentX || item.initialY !== currentY) {
+					// 	if (Math.abs(item.initialX - currentX) > 0.05) {
+					// 		attributes.position.array[xPos] +=
+					// 			(item.initialX - currentX) * delta * 10;
+					// 	} else {
+					// 		attributes.position.array[xPos] =
+					// 			item.initialX;
+					// 	}
+	
+					// 	if (Math.abs(item.initialY - currentY) > 0.05) {
+					// 		attributes.position.array[yPos] +=
+					// 			(item.initialY - currentY) * delta * 10;
+					// 	} else {
+					// 		attributes.position.array[yPos] =
+					// 			item.initialY;
+					// 	}
+					// } else {
+					// 	INTERSECTED.splice(intersect, 1);
+					// }
 				}
 			}
 		}
@@ -307,29 +329,33 @@ export const initScene = () => {
 		/** Animate intersections */
 		for (let intersect in INTERSECTED) {
 			const item = INTERSECTED[intersect];
-			const currentX = attributes.position.array[item.index * 3];
-			const currentY = attributes.position.array[item.index * 3 + 1];
 
-			if (item.animating < 1) {
+			const xPos = item.index * 3;
+			const yPos = xPos + 1;
+
+			const currentX = attributes.position.array[xPos];
+			const currentY = attributes.position.array[yPos];
+
+			if (item.animating < .5 && intersects.some((obj) => obj.index === item.index)) {
 				item.animating += delta;
-				attributes.position.array[item.index * 3] += item.toX * delta / 8;
-				attributes.position.array[item.index * 3 + 1] +=
+				attributes.position.array[xPos] += item.toX * delta / 8;
+				attributes.position.array[yPos] +=
 					item.toY * delta / 8;
 			} else {
 				if (item.initialX !== currentX || item.initialY !== currentY) {
 					if (Math.abs(item.initialX - currentX) > 0.05) {
-						attributes.position.array[item.index * 3] +=
+						attributes.position.array[xPos] +=
 							(item.initialX - currentX) * delta * 10;
 					} else {
-						attributes.position.array[item.index * 3] =
+						attributes.position.array[xPos] =
 							item.initialX;
 					}
 
 					if (Math.abs(item.initialY - currentY) > 0.05) {
-						attributes.position.array[item.index * 3 + 1] +=
+						attributes.position.array[yPos] +=
 							(item.initialY - currentY) * delta * 10;
 					} else {
-						attributes.position.array[item.index * 3 + 1] =
+						attributes.position.array[yPos] =
 							item.initialY;
 					}
 				} else {
