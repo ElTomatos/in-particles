@@ -36905,10 +36905,11 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Constants
  */
 var CIRCLES_COUNT = 20;
-var SMALL_CIRCLES = 6;
+var FIRST_CIRCLE_PARTICLES = 20;
+var SMALL_CIRCLES = 5;
 var SMALL_CIRCLES_PARTICLES = 40;
 var BIG_CIRCLES_PARTICLES = 100;
-var PARTICLES_COUNT = SMALL_CIRCLES * SMALL_CIRCLES_PARTICLES + (CIRCLES_COUNT - SMALL_CIRCLES) * BIG_CIRCLES_PARTICLES;
+var PARTICLES_COUNT = FIRST_CIRCLE_PARTICLES + SMALL_CIRCLES * SMALL_CIRCLES_PARTICLES + (CIRCLES_COUNT - SMALL_CIRCLES) * BIG_CIRCLES_PARTICLES;
 var PARTICLE_SIZE = 2;
 /**
  * Global definitions
@@ -37044,7 +37045,7 @@ var initScene = function initScene() {
   /** Intersections Raycaster */
 
   raycaster = new _three.Raycaster();
-  raycaster.params.Points.threshold = 20; // raycaster.params.Line.threshold = 15;
+  raycaster.params.Points.threshold = 15; // raycaster.params.Line.threshold = 15;
 
   /** Clock */
 
@@ -37096,8 +37097,7 @@ var initScene = function initScene() {
 
   var counter = 0;
   circles.forEach(function (radius, index) {
-    var numNodes = index > SMALL_CIRCLES ? BIG_CIRCLES_PARTICLES : SMALL_CIRCLES_PARTICLES;
-    var width = radius * 2;
+    var numNodes = index === 0 ? FIRST_CIRCLE_PARTICLES : index > SMALL_CIRCLES ? BIG_CIRCLES_PARTICLES : SMALL_CIRCLES_PARTICLES;
     var angle;
     var x;
     var y;
@@ -37159,7 +37159,7 @@ var initScene = function initScene() {
       var _loop = function _loop(intersect) {
         var _intersects$intersect = intersects[intersect],
             index = _intersects$intersect.index,
-            distanceToRay = _intersects$intersect.distanceToRay;
+            point = _intersects$intersect.point;
         var xPos = index * 3;
         var yPos = xPos + 1;
 
@@ -37168,18 +37168,15 @@ var initScene = function initScene() {
         })) {
           var initialX = attributes.position.array[xPos];
           var initialY = attributes.position.array[yPos];
-          var animationRatio = (PARTICLES_COUNT - index / PARTICLES_COUNT - 1) / 500;
           var config = {
             index: index,
             initialX: initialX,
             initialY: initialY,
             animating: delta,
-            toX: initialX + Math.sign(initialX) * animationRatio,
-            toY: initialY + Math.sign(initialY) * animationRatio
+            toX: initialX + (initialX - point.x) / 5,
+            toY: initialY + (initialY - point.y) / 5
           };
           INTERSECTED.push(config);
-          attributes.position.array[xPos] += config.toX * delta / 2;
-          attributes.position.array[yPos] += config.toY * delta;
         }
       };
 
@@ -37318,7 +37315,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56103" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57305" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

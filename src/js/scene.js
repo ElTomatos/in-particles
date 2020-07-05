@@ -45,10 +45,11 @@ import facetype from "../fonts/alegreya.json";
  * Constants
  */
 const CIRCLES_COUNT = 20;
-const SMALL_CIRCLES = 6;
+const FIRST_CIRCLE_PARTICLES = 20;
+const SMALL_CIRCLES = 5;
 const SMALL_CIRCLES_PARTICLES = 40;
 const BIG_CIRCLES_PARTICLES = 100;
-const PARTICLES_COUNT = SMALL_CIRCLES * SMALL_CIRCLES_PARTICLES + (CIRCLES_COUNT - SMALL_CIRCLES) * BIG_CIRCLES_PARTICLES;
+const PARTICLES_COUNT = FIRST_CIRCLE_PARTICLES + SMALL_CIRCLES * SMALL_CIRCLES_PARTICLES + (CIRCLES_COUNT - SMALL_CIRCLES) * BIG_CIRCLES_PARTICLES;
 const PARTICLE_SIZE = 2;
 
 /**
@@ -188,7 +189,7 @@ export const initScene = () => {
 
 	/** Intersections Raycaster */
 	raycaster = new Raycaster();
-	raycaster.params.Points.threshold = 20;
+	raycaster.params.Points.threshold = 15;
 	// raycaster.params.Line.threshold = 15;
 
 	/** Clock */
@@ -239,8 +240,7 @@ export const initScene = () => {
 	/** Create particles for circles */
 	let counter = 0;
 	circles.forEach((radius, index) => {
-		const numNodes = index > SMALL_CIRCLES ? BIG_CIRCLES_PARTICLES : SMALL_CIRCLES_PARTICLES;
-		const width = radius * 2;
+		const numNodes = index === 0 ? FIRST_CIRCLE_PARTICLES : index > SMALL_CIRCLES ? BIG_CIRCLES_PARTICLES : SMALL_CIRCLES_PARTICLES;
 		let angle;
 		let x;
 		let y;
@@ -297,27 +297,23 @@ export const initScene = () => {
 		/** Add intersections to animation */
 		if (intersects.length && intersects.length < PARTICLES_COUNT) {
 			for (let intersect in intersects) {
-				const { index, distanceToRay } = intersects[intersect];
+				const { index, point } = intersects[intersect];
 				const xPos = index * 3;
 				const yPos = xPos + 1;
 
 				if (!INTERSECTED.some((obj) => obj.index === index)) {
 					const initialX = attributes.position.array[xPos];
 					const initialY = attributes.position.array[yPos];
-					const animationRatio = (PARTICLES_COUNT - index / PARTICLES_COUNT - 1) / 500
 					const config = {
 						index,
 						initialX,
 						initialY,
 						animating: delta,
-						toX: initialX + Math.sign(initialX) * animationRatio,
-						toY: initialY + Math.sign(initialY) * animationRatio,
+						toX: initialX + (initialX -point.x) / 5,
+						toY: initialY + (initialY -point.y) / 5,
 					};
 
 					INTERSECTED.push(config);
-					attributes.position.array[xPos] += config.toX * delta / 2;
-					attributes.position.array[yPos] +=
-						config.toY * delta;
 				}
 			}
 		}
