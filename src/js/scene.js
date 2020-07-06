@@ -117,9 +117,9 @@ const addQuestionMark = (scene, texture) => {
 	const textMaterial = new MeshBasicMaterial({  
 		envMap: texture,   
 		combine: MixOperation,     
-		reflectivity: 1,    
+		reflectivity: .5,    
 		color: "#8200ff",
-		opacity: 1
+		opacity: .7
 	});
 
 	const mesh = new Mesh(geometry, textMaterial);

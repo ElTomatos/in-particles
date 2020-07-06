@@ -36956,9 +36956,9 @@ var addQuestionMark = function addQuestionMark(scene, texture) {
   var textMaterial = new _three.MeshBasicMaterial({
     envMap: texture,
     combine: _three.MixOperation,
-    reflectivity: 1,
+    reflectivity: .5,
     color: "#8200ff",
-    opacity: 1
+    opacity: .7
   });
   var mesh = new _three.Mesh(geometry, textMaterial);
   mesh.position.set(-20, -30, -25);
@@ -37333,7 +37333,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51919" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52080" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
