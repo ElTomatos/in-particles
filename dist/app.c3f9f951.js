@@ -36857,6 +36857,8 @@ module.exports = {
   "cssFontWeight": "normal",
   "cssFontStyle": "normal"
 };
+},{}],"img/texture-back.jpg":[function(require,module,exports) {
+module.exports = "/texture-back.b1322fcf.jpg";
 },{}],"js/scene.js":[function(require,module,exports) {
 "use strict";
 
@@ -36876,6 +36878,8 @@ var _easings = require("./utils/easings");
 var _circle = _interopRequireDefault(require("../svg/circle.png"));
 
 var _alegreya = _interopRequireDefault(require("../fonts/alegreya.json"));
+
+var _textureBack = _interopRequireDefault(require("../img/texture-back.jpg"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -36919,25 +36923,42 @@ var clock;
 var ww = window.innerWidth;
 var wh = window.innerHeight;
 /**
+ * Load background scene 
+ */
+
+var loadBackgroundScene = function loadBackgroundScene(scene) {
+  var loader = new _three.CubeTextureLoader(); // loader.setPath( background );
+
+  var textureCube = loader.load([_textureBack.default, _textureBack.default, _textureBack.default, _textureBack.default, _textureBack.default, _textureBack.default]);
+  var questionMark = addQuestionMark(scene, textureCube);
+  scene.add(questionMark);
+  addMouseMoveHandler(mouse, questionMark, textureCube);
+};
+/**
  * Add question mark mesh
  */
 
-var addQuestionMark = function addQuestionMark() {
+
+var addQuestionMark = function addQuestionMark(scene, texture) {
   var font = new _three.Font(_alegreya.default);
   var geometry = new _three.TextGeometry('?', {
     font: font,
     size: 80,
-    height: 4,
+    height: 0,
     curveSegments: 0,
     bevelEnabled: true,
-    bevelThickness: 2,
-    bevelSize: 2,
+    bevelThickness: 0,
+    bevelSize: 0,
     bevelOffset: 0,
-    bevelSegments: 100
+    bevelSegments: 5
   });
-  var textMaterial = new _three.MeshPhongMaterial({
-    color: 0x856dff,
-    opacity: 0.2
+  console.log(texture);
+  var textMaterial = new _three.MeshStandardMaterial({
+    // envMap: texture,   
+    // combine: MixOperation,     
+    // reflectivity: .3,    
+    // color: "#8200ff",
+    opacity: .4
   });
   var mesh = new _three.Mesh(geometry, textMaterial);
   mesh.position.set(-20, -30, -25);
@@ -36975,7 +36996,7 @@ var clearStuckedParticles = (0, _lodash.default)(function () {
  * and question mark rotation
  */
 
-var addMouseMoveHandler = function addMouseMoveHandler(mouse, questionMark) {
+var addMouseMoveHandler = function addMouseMoveHandler(mouse, questionMark, texture) {
   document.addEventListener("mousemove", function (e) {
     e.preventDefault();
     mouse.x = e.clientX / ww * 2 - 1;
@@ -37248,21 +37269,23 @@ var initScene = function initScene() {
     renderer.render(scene, camera);
   }
   /** Add question mark */
+  // const questionMark = addQuestionMark(scene);
+  // scene.add(questionMark);
 
-
-  var questionMark = addQuestionMark();
-  scene.add(questionMark);
   /** Add light */
+
 
   var light = addLight();
   scene.add(light);
   scene.add(light.target);
   /** Add mouse move handler */
 
-  addMouseMoveHandler(mouse, questionMark);
   /** Add resize handler */
 
   addResizeHandler(camera, renderer);
+  /** Load background scene */
+
+  loadBackgroundScene(scene);
   /** Start animation loop */
 
   animate();
@@ -37272,7 +37295,7 @@ var initScene = function initScene() {
 };
 
 exports.initScene = initScene;
-},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./removeLoader":"js/removeLoader.js","./utils/easings":"js/utils/easings.js","../svg/circle.png":"svg/circle.png","../fonts/alegreya.json":"fonts/alegreya.json"}],"js/app.js":[function(require,module,exports) {
+},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./removeLoader":"js/removeLoader.js","./utils/easings":"js/utils/easings.js","../svg/circle.png":"svg/circle.png","../fonts/alegreya.json":"fonts/alegreya.json","../img/texture-back.jpg":"img/texture-back.jpg"}],"js/app.js":[function(require,module,exports) {
 "use strict";
 
 require("../styles/main.scss");
@@ -37310,7 +37333,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59059" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61752" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

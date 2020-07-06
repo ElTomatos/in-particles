@@ -11,7 +11,6 @@ import {
 	Mesh,
 	Geometry,
 	Points,
-	TextureLoader,
 	ShaderMaterial,
 	Color,
 	BufferAttribute,
@@ -21,6 +20,16 @@ import {
 	Font,
 	MeshPhongMaterial,
 	DirectionalLight,
+	MeshLambertMaterial,
+	MeshDepthMaterial,
+	RGBADepthPacking,
+	MixOperation,
+	ImageUtils,
+	TextureLoader,
+	RepeatWrapping,
+	CubeTextureLoader,
+	MeshBasicMaterial,
+	MeshStandardMaterial
 } from "three";
 import debounce from 'lodash.debounce';
 
@@ -40,6 +49,8 @@ import circle from "../svg/circle.png";
  */
 import facetype from "../fonts/alegreya.json";
 // import { debounce } from "./utils/debounce";
+
+import background from "../img/texture-back.jpg";
 
 /**
  * Constants
@@ -66,23 +77,50 @@ let ww = window.innerWidth;
 let wh = window.innerHeight;
 
 /**
+ * Load background scene 
+ */
+const loadBackgroundScene = (scene) => {
+	var loader = new CubeTextureLoader();
+
+	// loader.setPath( background );
+
+	var textureCube = loader.load( [
+		background, background,
+		background, background,
+		background, background
+	]);
+
+	const questionMark = addQuestionMark(scene, textureCube);
+	scene.add(questionMark);
+	addMouseMoveHandler(mouse, questionMark, textureCube);
+}
+
+/**
  * Add question mark mesh
  */
-const addQuestionMark = () => {
+const addQuestionMark = (scene, texture) => {
 	const font = new Font(facetype);
 	const geometry = new TextGeometry('?', {
 		font: font,
 		size: 80,
-		height: 4,
+		height: 0,
 		curveSegments: 0,
 		bevelEnabled: true,
-		bevelThickness: 2,
-		bevelSize: 2,
+		bevelThickness: 0,
+		bevelSize: 0,
 		bevelOffset: 0,
-		bevelSegments: 100
+		bevelSegments: 5
 	});
 
-	const textMaterial = new MeshPhongMaterial({ color: 0x856dff, opacity: 0.2 });
+	console.log(texture);
+
+	const textMaterial = new MeshStandardMaterial({  
+		// envMap: texture,   
+		// combine: MixOperation,     
+		// reflectivity: .3,    
+		// color: "#8200ff",
+		opacity: .4
+	});
 
 	const mesh = new Mesh(geometry, textMaterial);
 	mesh.position.set(-20, -30, -25);
@@ -117,7 +155,7 @@ const clearStuckedParticles = debounce(() => {
  * for particles intersections
  * and question mark rotation
  */
-const addMouseMoveHandler = (mouse, questionMark) => {
+const addMouseMoveHandler = (mouse, questionMark, texture) => {
 	document.addEventListener("mousemove", function (e) {
 		e.preventDefault();
 
@@ -391,8 +429,8 @@ export const initScene = () => {
 	}
 
 	/** Add question mark */
-	const questionMark = addQuestionMark();
-	scene.add(questionMark);
+	// const questionMark = addQuestionMark(scene);
+	// scene.add(questionMark);
 
 	/** Add light */
 	const light = addLight();
@@ -400,10 +438,13 @@ export const initScene = () => {
 	scene.add(light.target);
 
 	/** Add mouse move handler */
-	addMouseMoveHandler(mouse, questionMark);
+
 
 	/** Add resize handler */
 	addResizeHandler(camera, renderer);
+
+	/** Load background scene */
+	loadBackgroundScene(scene);
 
 	/** Start animation loop */
 	animate();
