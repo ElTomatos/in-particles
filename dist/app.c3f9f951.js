@@ -36953,12 +36953,12 @@ var addQuestionMark = function addQuestionMark(scene, texture) {
     bevelSegments: 5
   });
   console.log(texture);
-  var textMaterial = new _three.MeshStandardMaterial({
-    // envMap: texture,   
-    // combine: MixOperation,     
-    // reflectivity: .3,    
-    // color: "#8200ff",
-    opacity: .4
+  var textMaterial = new _three.MeshBasicMaterial({
+    envMap: texture,
+    combine: _three.MixOperation,
+    reflectivity: 1,
+    color: "#8200ff",
+    opacity: 1
   });
   var mesh = new _three.Mesh(geometry, textMaterial);
   mesh.position.set(-20, -30, -25);
@@ -37333,7 +37333,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61752" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51919" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
