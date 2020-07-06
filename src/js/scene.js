@@ -103,13 +103,13 @@ const addQuestionMark = (scene, texture) => {
 	const geometry = new TextGeometry('?', {
 		font: font,
 		size: 80,
-		height: 0,
-		curveSegments: 0,
+		height: 2,
+		curveSegments: 10,
 		bevelEnabled: true,
-		bevelThickness: 0,
-		bevelSize: 0,
+		bevelThickness: 2,
+		bevelSize: 2,
 		bevelOffset: 0,
-		bevelSegments: 5
+		bevelSegments: 25
 	});
 
 	console.log(texture);
@@ -118,7 +118,7 @@ const addQuestionMark = (scene, texture) => {
 		envMap: texture,   
 		combine: MixOperation,     
 		reflectivity: .5,    
-		color: "#8200ff",
+		color: "#03010e",
 		opacity: .7
 	});
 
