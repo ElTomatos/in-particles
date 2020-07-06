@@ -36883,22 +36883,17 @@ var _textureBack = _interopRequireDefault(require("../img/texture-back.jpg"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-/**
- * Vendors
- */
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
-/**
- * Utils
- */
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-/**
- * Particles texture
- */
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-/**
- * Question mark texture
- */
-// import { debounce } from "./utils/debounce";
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 /**
  * Constants
@@ -36944,21 +36939,17 @@ var addQuestionMark = function addQuestionMark(scene, texture) {
   var geometry = new _three.TextGeometry('?', {
     font: font,
     size: 80,
-    height: 2,
-    curveSegments: 10,
-    bevelEnabled: true,
-    bevelThickness: 2,
-    bevelSize: 2,
+    height: 0,
+    curveSegments: 0,
+    bevelEnabled: false,
+    bevelThickness: 0,
+    bevelSize: 0,
     bevelOffset: 0,
-    bevelSegments: 25
+    bevelSegments: 0
   });
-  console.log(texture);
-  var textMaterial = new _three.MeshBasicMaterial({
-    envMap: texture,
-    combine: _three.MixOperation,
-    reflectivity: .5,
-    color: "#03010e",
-    opacity: .7
+  var textMaterial = new _three.MeshStandardMaterial({
+    color: "#8200ff",
+    opacity: .5
   });
   var mesh = new _three.Mesh(geometry, textMaterial);
   mesh.position.set(-20, -30, -25);
@@ -36970,10 +36961,10 @@ var addQuestionMark = function addQuestionMark(scene, texture) {
 
 
 var addLight = function addLight() {
-  var light = new _three.DirectionalLight(0x652eff, 1);
-  light.position.set(0, 25, 30);
-  light.target.position.set(0, -10, 0);
-  return light;
+  var light = new _three.DirectionalLight(0xff00ff);
+  light.position.set(0, -20, 0);
+  light.target.position.set(20, 30, -30);
+  return [light];
 };
 /**
  * Clear stucked particles
@@ -37157,6 +37148,24 @@ var initScene = function initScene() {
 
   var particleSystem = new _three.Points(geometry, material);
   scene.add(particleSystem);
+  /** Add light */
+
+  var _addLight = addLight(),
+      _addLight2 = _slicedToArray(_addLight, 1),
+      light = _addLight2[0];
+
+  scene.add(light);
+  scene.add(light.target);
+  /** light colors */
+
+  var r = 0.4;
+  var g = 0;
+  var b = 1;
+  var x = 20;
+  var y = 30;
+  var z = -30;
+  var sign = 1;
+  var coordSign = 1;
   /** Animation loop */
 
   function animate() {
@@ -37169,6 +37178,26 @@ var initScene = function initScene() {
     /** Get delta from previous tick */
 
     var delta = clock.getDelta();
+
+    if (r > 0.9) {
+      sign = -1;
+    } else if (r < 0.1) {
+      sign = 1;
+    }
+
+    if (x > 100) {
+      coordSign = -1;
+    } else if (x < 1) {
+      coordSign = 1;
+    }
+
+    r += delta / 10 * sign;
+    var lightStep = delta * 20;
+    x += lightStep * coordSign;
+    y += lightStep * coordSign;
+    z += lightStep * coordSign;
+    light.color.setRGB(r, g, b);
+    light.target.position.set(x, y, -35);
     /** Add intersections to animation */
 
     if (intersects.length && intersects.length < PARTICLES_COUNT) {
@@ -37209,6 +37238,7 @@ var initScene = function initScene() {
       var yPos = xPos + 1;
       var currentX = attributes.position.array[xPos];
       var currentY = attributes.position.array[yPos];
+      light.setC;
 
       if (intersects.some(function (obj) {
         return obj.index === item.index;
@@ -37272,15 +37302,10 @@ var initScene = function initScene() {
   // const questionMark = addQuestionMark(scene);
   // scene.add(questionMark);
 
-  /** Add light */
-
-
-  var light = addLight();
-  scene.add(light);
-  scene.add(light.target);
   /** Add mouse move handler */
 
   /** Add resize handler */
+
 
   addResizeHandler(camera, renderer);
   /** Load background scene */
@@ -37333,7 +37358,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52405" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53122" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

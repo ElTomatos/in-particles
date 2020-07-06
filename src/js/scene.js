@@ -29,7 +29,8 @@ import {
 	RepeatWrapping,
 	CubeTextureLoader,
 	MeshBasicMaterial,
-	MeshStandardMaterial
+	MeshStandardMaterial,
+	AmbientLight
 } from "three";
 import debounce from 'lodash.debounce';
 
@@ -103,23 +104,18 @@ const addQuestionMark = (scene, texture) => {
 	const geometry = new TextGeometry('?', {
 		font: font,
 		size: 80,
-		height: 2,
-		curveSegments: 10,
-		bevelEnabled: true,
-		bevelThickness: 2,
-		bevelSize: 2,
+		height: 0,
+		curveSegments: 0,
+		bevelEnabled: false,
+		bevelThickness: 0,
+		bevelSize: 0,
 		bevelOffset: 0,
-		bevelSegments: 25
+		bevelSegments: 0
 	});
 
-	console.log(texture);
-
-	const textMaterial = new MeshBasicMaterial({  
-		envMap: texture,   
-		combine: MixOperation,     
-		reflectivity: .5,    
-		color: "#03010e",
-		opacity: .7
+	const textMaterial = new MeshStandardMaterial({   
+		color: "#8200ff",
+		opacity: .5
 	});
 
 	const mesh = new Mesh(geometry, textMaterial);
@@ -132,10 +128,11 @@ const addQuestionMark = (scene, texture) => {
  * Add light to scene
  */
 const addLight = () => {
-	const light = new DirectionalLight(0x652eff, 1);
-	light.position.set(0, 25, 30);
-	light.target.position.set(0, -10, 0);
-	return light;
+	const light = new DirectionalLight(0xff00ff);
+	light.position.set(0, -20, 0);
+	light.target.position.set(20, 30, -30);
+
+	return [light];
 };
 
 /**
@@ -319,6 +316,24 @@ export const initScene = () => {
 	const particleSystem = new Points(geometry, material);
 	scene.add(particleSystem);
 
+		/** Add light */
+		const [light] = addLight();
+		scene.add(light);
+		scene.add(light.target);
+
+		/** light colors */
+		let r = 0.4;
+		let g = 0;
+		let b = 1;
+
+		let x = 20;
+		let y = 30;
+		let z = -30;
+
+		let sign = 1;
+
+		let coordSign = 1;
+
 	/** Animation loop */
 	function animate() {
 		requestAnimationFrame(animate);
@@ -331,6 +346,29 @@ export const initScene = () => {
 
 		/** Get delta from previous tick */
 		const delta = clock.getDelta();
+	
+		if (r > 0.9) {
+			sign = -1;
+		} else if (r < 0.1) {
+			sign = 1;
+		}
+
+		if (x > 100) {
+			coordSign = -1;
+		} else if (x < 1) {
+			coordSign = 1;
+		}
+
+		r += delta / 10 * sign;
+
+		const lightStep = delta * 20;
+
+		x += lightStep * coordSign;
+		y += lightStep * coordSign;
+		z += lightStep * coordSign;
+
+		light.color.setRGB(r, g, b);
+		light.target.position.set(x, y, -35);
 
 		/** Add intersections to animation */
 		if (intersects.length && intersects.length < PARTICLES_COUNT) {
@@ -365,6 +403,8 @@ export const initScene = () => {
 
 			const currentX = attributes.position.array[xPos];
 			const currentY = attributes.position.array[yPos];
+
+			light.setC
 
 			if (intersects.some((obj) => obj.index === item.index)) {
 
@@ -432,10 +472,8 @@ export const initScene = () => {
 	// const questionMark = addQuestionMark(scene);
 	// scene.add(questionMark);
 
-	/** Add light */
-	const light = addLight();
-	scene.add(light);
-	scene.add(light.target);
+
+
 
 	/** Add mouse move handler */
 
