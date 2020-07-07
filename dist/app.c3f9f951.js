@@ -36809,50 +36809,45 @@ function easeInOutCirc(x) {
 }
 },{}],"svg/circle.png":[function(require,module,exports) {
 module.exports = "/circle.3c98ba4d.png";
-},{}],"fonts/alegreya.json":[function(require,module,exports) {
+},{}],"fonts/museo-900.json":[function(require,module,exports) {
 module.exports = {
   "glyphs": {
     "?": {
-      "ha": 479,
-      "x_min": 56,
-      "x_max": 513,
-      "o": "m 117 933 q 410 865 307 924 q 513 706 513 807 q 478 597 513 649 q 381 511 444 546 l 289 458 l 286 451 l 294 342 l 142 319 l 126 335 l 110 504 l 118 519 l 240 575 q 313 672 313 613 q 258 747 313 721 q 72 781 203 772 l 56 800 l 96 922 l 117 933 m 226 219 q 306 190 278 219 q 335 110 335 161 q 303 22 335 54 q 218 -11 271 -11 q 138 18 165 -11 q 110 100 110 47 q 141 187 110 154 q 226 219 172 219 z "
+      "ha": 707,
+      "x_min": 0,
+      "x_max": 0,
+      "o": "m 188 307 l 418 307 l 418 357 b 656 742 418 481 656 514 b 332 1014 656 921 488 1014 b 42 899 199 1014 101 958 l 175 736 b 307 796 211 768 257 796 b 406 714 360 796 406 761 b 188 376 406 597 188 564 z m 193 0 l 413 0 l 413 208 l 193 208 z "
     }
   },
-  "familyName": "Alegreya Sans ExtraBold",
-  "ascender": 1250,
-  "descender": -417,
-  "underlinePosition": -212,
-  "underlineThickness": 58,
+  "familyName": "Museo Sans Cyrl 900",
+  "ascender": 1306,
+  "descender": -361,
+  "underlinePosition": -104,
+  "underlineThickness": 69,
   "boundingBox": {
-    "yMin": -396,
-    "xMin": -635,
-    "yMax": 1506,
-    "xMax": 1782
+    "yMin": -299,
+    "xMin": -179,
+    "yMax": 1275,
+    "xMax": 1708
   },
   "resolution": 1000,
   "original_font_information": {
     "format": 0,
-    "copyright": "Copyright 2013 The Alegreya Sans Project Authors (https://github.com/huertatipografica/Alegreya-Sans)",
-    "fontFamily": "Alegreya Sans ExtraBold",
+    "copyright": "Copyright (c) 2012 by Jos Buivenga. All rights reserved.",
+    "fontFamily": "Museo Sans Cyrl 900",
     "fontSubfamily": "Regular",
-    "uniqueID": "2.004;HT  ;AlegreyaSans-ExtraBold",
-    "fullName": "Alegreya Sans ExtraBold",
-    "version": "Version 2.004; ttfautohint (v1.6)",
-    "postScriptName": "AlegreyaSans-ExtraBold",
-    "manufacturer": "Huerta Tipografica",
-    "designer": "Juan Pablo del Peral",
-    "manufacturerURL": "http://www.huertatipografica.com.ar",
-    "designerURL": "http://www.huertatipografica.com.ar",
-    "licence": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
-    "licenceURL": "http://scripts.sil.org/OFL",
-    "preferredFamily": "Alegreya Sans",
-    "preferredSubfamily": "ExtraBold",
-    "unknown1": "Roman numerals",
-    "unknown2": "Arrows, triangles and circles",
-    "unknown3": "Foundry icon",
-    "unknown4": "Dynamic arrows and triangles",
-    "unknown5": "Greek adscript iota"
+    "uniqueID": "JosBuivenga: Museo Sans Cyrl 900: 2012",
+    "fullName": "MuseoSansCyrl-900",
+    "version": "Version 1.023",
+    "postScriptName": "MuseoSansCyrl-900",
+    "trademark": "Museo Sans is a trademark of Jos Buivenga.",
+    "manufacturer": "Jos Buivenga",
+    "designer": "Jos Buivenga",
+    "description": "Spaced and kerned with iKern.",
+    "manufacturerURL": "http://www.exljbris.com",
+    "designerURL": "http://www.exljbris.com",
+    "preferredFamily": "Museo Sans Cyrl",
+    "preferredSubfamily": "900"
   },
   "cssFontWeight": "normal",
   "cssFontStyle": "normal"
@@ -36877,7 +36872,7 @@ var _easings = require("./utils/easings");
 
 var _circle = _interopRequireDefault(require("../svg/circle.png"));
 
-var _alegreya = _interopRequireDefault(require("../fonts/alegreya.json"));
+var _museo = _interopRequireDefault(require("../fonts/museo-900.json"));
 
 var _textureBack = _interopRequireDefault(require("../img/texture-back.jpg"));
 
@@ -36935,7 +36930,7 @@ var loadBackgroundScene = function loadBackgroundScene(scene) {
 
 
 var addQuestionMark = function addQuestionMark(scene, texture) {
-  var font = new _three.Font(_alegreya.default);
+  var font = new _three.Font(_museo.default);
   var geometry = new _three.TextGeometry('?', {
     font: font,
     size: 80,
@@ -36947,12 +36942,15 @@ var addQuestionMark = function addQuestionMark(scene, texture) {
     bevelOffset: 0,
     bevelSegments: 0
   });
-  var textMaterial = new _three.MeshStandardMaterial({
+  var textMaterial = new _three.MeshBasicMaterial({
+    envMap: texture,
+    combine: _three.MixOperation,
+    reflectivity: 1,
     color: "#8200ff",
-    opacity: .5
+    opacity: 1
   });
   var mesh = new _three.Mesh(geometry, textMaterial);
-  mesh.position.set(-20, -30, -25);
+  mesh.position.set(-25, -35, -25);
   return mesh;
 };
 /**
@@ -37320,7 +37318,7 @@ var initScene = function initScene() {
 };
 
 exports.initScene = initScene;
-},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./removeLoader":"js/removeLoader.js","./utils/easings":"js/utils/easings.js","../svg/circle.png":"svg/circle.png","../fonts/alegreya.json":"fonts/alegreya.json","../img/texture-back.jpg":"img/texture-back.jpg"}],"js/app.js":[function(require,module,exports) {
+},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./removeLoader":"js/removeLoader.js","./utils/easings":"js/utils/easings.js","../svg/circle.png":"svg/circle.png","../fonts/museo-900.json":"fonts/museo-900.json","../img/texture-back.jpg":"img/texture-back.jpg"}],"js/app.js":[function(require,module,exports) {
 "use strict";
 
 require("../styles/main.scss");
@@ -37358,7 +37356,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53122" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50820" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

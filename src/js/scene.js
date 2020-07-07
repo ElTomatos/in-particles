@@ -48,7 +48,7 @@ import circle from "../svg/circle.png";
 /**
  * Question mark texture
  */
-import facetype from "../fonts/alegreya.json";
+import facetype from "../fonts/museo-900.json";
 // import { debounce } from "./utils/debounce";
 
 import background from "../img/texture-back.jpg";
@@ -113,13 +113,16 @@ const addQuestionMark = (scene, texture) => {
 		bevelSegments: 0
 	});
 
-	const textMaterial = new MeshStandardMaterial({   
+	const textMaterial = new MeshBasicMaterial({  
+		envMap: texture,   
+		combine: MixOperation,
+		reflectivity: 1,  
 		color: "#8200ff",
-		opacity: .5
-	});
+		opacity: 1
+	});		
 
 	const mesh = new Mesh(geometry, textMaterial);
-	mesh.position.set(-20, -30, -25);
+	mesh.position.set(-25, -35, -25);
 
 	return mesh;
 };
