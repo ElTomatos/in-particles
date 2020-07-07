@@ -48,7 +48,7 @@ import circle from "../svg/circle.png";
 /**
  * Question mark texture
  */
-import facetype from "../fonts/museo-900.json";
+import facetype from "../fonts/museo-700.json";
 // import { debounce } from "./utils/debounce";
 
 import background from "../img/texture-back.jpg";

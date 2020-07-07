@@ -36809,37 +36809,37 @@ function easeInOutCirc(x) {
 }
 },{}],"svg/circle.png":[function(require,module,exports) {
 module.exports = "/circle.3c98ba4d.png";
-},{}],"fonts/museo-900.json":[function(require,module,exports) {
+},{}],"fonts/museo-700.json":[function(require,module,exports) {
 module.exports = {
   "glyphs": {
     "?": {
-      "ha": 707,
+      "ha": 671,
       "x_min": 0,
       "x_max": 0,
-      "o": "m 188 307 l 418 307 l 418 357 b 656 742 418 481 656 514 b 332 1014 656 921 488 1014 b 42 899 199 1014 101 958 l 175 736 b 307 796 211 768 257 796 b 406 714 360 796 406 761 b 188 376 406 597 188 564 z m 193 0 l 413 0 l 413 208 l 193 208 z "
+      "o": "m 201 285 l 371 285 l 371 339 b 614 744 371 489 614 515 b 310 1006 614 908 467 1006 b 49 906 197 1006 104 958 l 147 785 b 294 843 188 818 240 843 b 429 728 371 843 429 793 b 201 351 429 581 201 553 z m 200 0 l 371 0 l 371 165 l 200 165 z "
     }
   },
-  "familyName": "Museo Sans Cyrl 900",
+  "familyName": "Museo Sans Cyrl 700",
   "ascender": 1306,
   "descender": -361,
   "underlinePosition": -104,
   "underlineThickness": 69,
   "boundingBox": {
     "yMin": -299,
-    "xMin": -179,
-    "yMax": 1275,
-    "xMax": 1708
+    "xMin": -172,
+    "yMax": 1253,
+    "xMax": 1575
   },
   "resolution": 1000,
   "original_font_information": {
     "format": 0,
     "copyright": "Copyright (c) 2012 by Jos Buivenga. All rights reserved.",
-    "fontFamily": "Museo Sans Cyrl 900",
+    "fontFamily": "Museo Sans Cyrl 700",
     "fontSubfamily": "Regular",
-    "uniqueID": "JosBuivenga: Museo Sans Cyrl 900: 2012",
-    "fullName": "MuseoSansCyrl-900",
+    "uniqueID": "JosBuivenga: Museo Sans Cyrl 700: 2012",
+    "fullName": "MuseoSansCyrl-700",
     "version": "Version 1.023",
-    "postScriptName": "MuseoSansCyrl-900",
+    "postScriptName": "MuseoSansCyrl-700",
     "trademark": "Museo Sans is a trademark of Jos Buivenga.",
     "manufacturer": "Jos Buivenga",
     "designer": "Jos Buivenga",
@@ -36847,7 +36847,7 @@ module.exports = {
     "manufacturerURL": "http://www.exljbris.com",
     "designerURL": "http://www.exljbris.com",
     "preferredFamily": "Museo Sans Cyrl",
-    "preferredSubfamily": "900"
+    "preferredSubfamily": "700"
   },
   "cssFontWeight": "normal",
   "cssFontStyle": "normal"
@@ -36872,7 +36872,7 @@ var _easings = require("./utils/easings");
 
 var _circle = _interopRequireDefault(require("../svg/circle.png"));
 
-var _museo = _interopRequireDefault(require("../fonts/museo-900.json"));
+var _museo = _interopRequireDefault(require("../fonts/museo-700.json"));
 
 var _textureBack = _interopRequireDefault(require("../img/texture-back.jpg"));
 
@@ -37318,7 +37318,7 @@ var initScene = function initScene() {
 };
 
 exports.initScene = initScene;
-},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./removeLoader":"js/removeLoader.js","./utils/easings":"js/utils/easings.js","../svg/circle.png":"svg/circle.png","../fonts/museo-900.json":"fonts/museo-900.json","../img/texture-back.jpg":"img/texture-back.jpg"}],"js/app.js":[function(require,module,exports) {
+},{"three":"../node_modules/three/build/three.module.js","lodash.debounce":"../node_modules/lodash.debounce/index.js","./removeLoader":"js/removeLoader.js","./utils/easings":"js/utils/easings.js","../svg/circle.png":"svg/circle.png","../fonts/museo-700.json":"fonts/museo-700.json","../img/texture-back.jpg":"img/texture-back.jpg"}],"js/app.js":[function(require,module,exports) {
 "use strict";
 
 require("../styles/main.scss");
@@ -37356,7 +37356,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50820" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51200" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
