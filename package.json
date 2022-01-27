@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "lodash.debounce": "^4.0.8",
-    "three": "^0.118.3"
+    "three": "^0.137.0"
   }
 }
